@@ -163,6 +163,8 @@ def get_main_menu(user_id: int) -> InlineKeyboardMarkup:
     buttons = [
         [InlineKeyboardButton("📦 ORDER", callback_data="order")],
         [InlineKeyboardButton("👥 GROUPS", callback_data="groups")],
+        [InlineKeyboardButton("➕ GROUP ADD", callback_data="add_group")],
+        [InlineKeyboardButton("➖ GROUP REMOVE", callback_data="remove_group")],
         [InlineKeyboardButton("📊 ORDERS", callback_data="orders")],
         [InlineKeyboardButton("⚙️ SETTINGS", callback_data="settings")],
     ]
@@ -999,6 +1001,16 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await query.edit_message_text("📦 Format: <group_id> <service_id> <quantity>")
         return
 
+    if callback_data == "add_group":
+        user_data["awaiting_add_group"] = True
+        await query.edit_message_text("➕ Guruh qo'shish: <group_id> <group_name>")
+        return
+
+    if callback_data == "remove_group":
+        user_data["awaiting_remove_group"] = True
+        await query.edit_message_text("➖ Guruh o'chirish: <group_id>")
+        return
+
     if callback_data == "groups":
         if not GROUPS:
             await query.edit_message_text("❌ Guruhlar yo'q!")
@@ -1265,6 +1277,31 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         group_id, service_id, quantity = parts[0], int(parts[1]), int(parts[2])
         user_data.pop("awaiting_order", None)
         await submit_order(group_id, service_id, quantity, context, update.message.reply_text)
+        return
+
+    if user_data.get("awaiting_add_group"):
+        parts = text.split(maxsplit=1)
+        if len(parts) < 2:
+            await update.message.reply_text("Format: <group_id> <group_name>")
+            return
+
+        group_id, group_name = parts[0], parts[1]
+        GROUPS[group_id] = {"name": group_name, "total_orders": GROUPS.get(group_id, {}).get("total_orders", 0)}
+        save_json(GROUPS_FILE, GROUPS)
+        user_data.pop("awaiting_add_group", None)
+        await update.message.reply_text(f"✅ Guruh qo'shildi: {group_name}")
+        return
+
+    if user_data.get("awaiting_remove_group"):
+        group_id = text.strip()
+        if group_id not in GROUPS:
+            await update.message.reply_text("❌ Guruh topilmadi!")
+            return
+
+        GROUPS.pop(group_id, None)
+        save_json(GROUPS_FILE, GROUPS)
+        user_data.pop("awaiting_remove_group", None)
+        await update.message.reply_text("✅ Guruh o'chirildi!")
         return
 
     if text == "/cancel":
