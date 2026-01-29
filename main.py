@@ -463,7 +463,7 @@ async def set_api_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     api_url = text[1]
     api_key = text[2]
 
-    API_DATA.update({'url': api_url, 'key': api_key})
+    API_DATA.update({{'url': api_url, 'key': api_key}})
     save_json(API_FILE, API_DATA)
 
     await update.message.reply_text("✅ API sozlandi!")
@@ -491,7 +491,7 @@ async def order_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             result = await smm_api_request("add", service=service_id, link=link, quantity=quantity)
 
             if result and 'order' in result:
-                ORDERS.append({
+                ORDERS.append({{
                     'order_id': result['order'],
                     'link': link,
                     'service': service_id,
@@ -499,11 +499,11 @@ async def order_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     'done': False,
                     'group_id': group_id,
                     'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                })
+                }})
                 save_json(ORDERS_FILE, ORDERS)
 
                 if group_id not in GROUPS:
-                    GROUPS[group_id] = {'name': group_id, 'total_orders': 0}
+                    GROUPS[group_id] = {{'name': group_id, 'total_orders': 0}}
                 GROUPS[group_id]['total_orders'] += 1
                 save_json(GROUPS_FILE, GROUPS)
 
@@ -527,7 +527,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         api_url, api_key = parts[0], parts[1]
-        API_DATA.update({'url': api_url, 'key': api_key})
+        API_DATA.update({{'url': api_url, 'key': api_key}})
         save_json(API_FILE, API_DATA)
         context.user_data.pop("awaiting_api", None)
         await update.message.reply_text("✅ API sozlandi!")
@@ -550,7 +550,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = await smm_api_request("add", service=service_id, link=link, quantity=quantity)
 
         if result and 'order' in result:
-            ORDERS.append({
+            ORDERS.append({{
                 'order_id': result['order'],
                 'link': link,
                 'service': service_id,
@@ -558,17 +558,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 'done': False,
                 'group_id': group_id,
                 'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            })
+            }})
             save_json(ORDERS_FILE, ORDERS)
 
             if group_id not in GROUPS:
-                GROUPS[group_id] = {'name': group_id, 'total_orders': 0}
+                GROUPS[group_id] = {{'name': group_id, 'total_orders': 0}}
             GROUPS[group_id]['total_orders'] += 1
             save_json(GROUPS_FILE, GROUPS)
 
-            await update.message.reply_text(f"✅ Order yuborildi! ID: {result['order']}")
+            await update.message.reply_text(f"✅ Order yuborildi! ID: {{result['order']}}")
         else:
-            await update.message.reply_text(f'❌ Xato: {result.get("error", DEFAULT_ERROR)}')
+            await update.message.reply_text(f'❌ Xato: {{result.get("error", DEFAULT_ERROR)}}')
         return
 
 async def groups_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
